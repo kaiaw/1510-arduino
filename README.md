@@ -1,6 +1,8 @@
 # INF1510 Project 
 
-### Members: 
+## This is the arduino code used in an Arduino project for the course INF1510. 
+
+#### Members: 
 
 * Joakim Myrvoll Johansen
 * Aleksander Pollen
