@@ -13,7 +13,7 @@
 
 //This code is intended for use with Arduino Leonardo and other ATmega32U4-based Arduinos
 
-#include <Adafruit_GPS.h>
+#include <GPS.h>
 #include <SoftwareSerial.h>
 
 // Connect the GPS Power pin to 5V
@@ -25,22 +25,26 @@
 //   Connect the GPS TX (transmit) pin to Arduino RX1 (Digital 0)
 //   Connect the GPS RX (receive) pin to matching TX1 (Digital 1)
 
+
+
 // If using software serial, keep these lines enabled
 // (you can change the pin numbers to match your wiring):
-SoftwareSerial camSerial(8, 7);
-Adafruit_GPS GPS_CAM(&camSerial);
+SoftwareSerial camSerial(9, 8); // TX, RX
+GPS GPS_CAM(&camSerial);
 
 // If using hardware serial, comment
 // out the above two lines and enable these two lines instead:
-Adafruit_GPS GPS_PERSON(&Serial1);
 HardwareSerial personSerial = Serial1;
+//SoftwareSerial personSerial(6, 5) // TX på 6, RX på 5
+GPS GPS_PERSON(&personSerial);
+
 
 // Set GPSECHO to 'false' to turn off echoing the GPS data to the Serial console
 // Set to 'true' if you want to debug and listen to the raw GPS sentences
 #define GPSECHO  false
 
 //required for fmod()
-#include <math.h>;
+#include <math.h>
  
 // converts lat/long from Adafruit
 // degree-minute format to decimal-degrees
@@ -73,12 +77,18 @@ void setup()
   GPS_PERSON.begin(9600);
   
   // uncomment this line to turn on RMC (recommended minimum) and GGA (fix data) including altitude
-  GPS_CAM.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
-  GPS_PERSON.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+  //GPS_CAM.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+  //GPS_PERSON.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   // uncomment this line to turn on only the "minimum recommended" data
-  //GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCONLY);
+  GPS_CAM.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCONLY);
+  GPS_PERSON.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCONLY);
   // For parsing data, we don't suggest using anything but either RMC only or RMC+GGA since
   // the parser doesn't care about other sentences at this time
+
+  // Set gps baud rate.
+  GPS_CAM.sendCommand(PMTK_SET_BAUD_9600);
+  GPS_PERSON.sendCommand(PMTK_SET_BAUD_9600);
+  
   
   // Set the update rate
   GPS_CAM.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
@@ -87,29 +97,40 @@ void setup()
   // print it out we don't suggest using anything higher than 1 Hz
 
   // Request updates on antenna status, comment out to keep quiet
-  GPS_CAM.sendCommand(PGCMD_ANTENNA);
-  GPS_PERSON.sendCommand(PGCMD_ANTENNA);
+  /* GPS_CAM.sendCommand(PGCMD_ANTENNA); */
+  /* GPS_PERSON.sendCommand(PGCMD_ANTENNA); */
 
-  delay(1000);
+   delay(1000); 
   // Ask for firmware version
-  camSerial.println(PMTK_Q_RELEASE);
-  personSerial.println(PMTK_Q_RELEASE);
+  /* camSerial.println(PMTK_Q_RELEASE); */
+  /* personSerial.println(PMTK_Q_RELEASE); */
 }
 
 uint32_t timer = millis();
+
+boolean parseStatusCam;
+boolean parseStatusPerson;
+/*
+     Tried reading from GPS_CAM first, which it then does over SWSerial.
+     Tried readinf from GPS_PERSON after that, still reads from SWSerial
+
+     From this we know that the GPS data, no matter which is read from, 
+     data is stored in the same GPS object. 
+ */
+
+
 void loop()                     // run over and over again
 {
-  char c = GPS_CAM.read();
-  char p = GPS_PERSON.read();
-
-  boolean parseStatusCam;
-  boolean parseStatusPerson;
+  char c, p;
+  
+  c = GPS_CAM.read();
+  p = GPS_PERSON.read();
 
   // if you want to debug, this is a good time to do it!
- // if ((c) && (GPSECHO))
-   // Serial.write(c); 
+  //if ((c) && (GPSECHO))
+  // Serial.write(c); 
     
- // if ((p) && (GPSECHO))
+  //if ((p) && (GPSECHO))
   //  Serial.write(p);
   
   // if a sentence is received, we can check the checksum, parse it...
@@ -117,16 +138,27 @@ void loop()                     // run over and over again
     // a tricky thing here is if we print the NMEA sentence, or data
     // we end up not listening and catching other sentences! 
     // so be very wary if using OUTPUT_ALLDATA and trytng to print out data
-    //Serial.println(GPS.lastNMEA());   // this also sets the newNMEAreceived() flag to false
+
+    /* Serial.print("CAM GPS SOFTWARESERIAL: \n"); */
+    /* Serial.println(GPS_CAM.lastNMEA()); */
+    /* Serial.println("\n"); */
+
+    
+
+    // this also sets the newNMEAreceived() flag to false
   
     // Save parse status 
     parseStatusCam = GPS_CAM.parse(GPS_CAM.lastNMEA());
   }
-
+  
   // Do the same for the other GPS. 
   if (GPS_PERSON.newNMEAreceived()) {
+    /* Serial.print("PERSON GPS HARDWARESERIAL: \n"); */
+    /* Serial.println(GPS_PERSON.lastNMEA()); */
+    /* Serial.println("\n"); */
+    
     parseStatusPerson = GPS_PERSON.parse(GPS_PERSON.lastNMEA());   
-      }  
+  }  
 
   // if millis() or timer wraps around, we'll just reset it
   if (timer > millis())  timer = millis();
@@ -145,7 +177,9 @@ void loop()                     // run over and over again
     //Serial.print(GPS.month, DEC); Serial.print("/20");
     //Serial.println(GPS.year, DEC);
 
-    if (parseStatusCam) {
+    boolean parsedPrint = true;
+
+     if (parsedPrint) {
       
       Serial.print("\n ******** GPS CAM SoftwareSerial ********* \n");
       Serial.print("Fix: "); Serial.print((int)GPS_CAM.fix);
@@ -162,9 +196,9 @@ void loop()                     // run over and over again
         Serial.print("Satellites: "); Serial.println((int)GPS_CAM.satellites);
       }
       Serial.print(" *************************** \n\n");
-    }
+       }
 
-    if (parseStatusPerson) {
+     if (parsedPrint) {
       Serial.print("\n ******* GPS PERSON HardwareSerial ******* \n");
       Serial.print("Fix: "); Serial.print((int)GPS_PERSON.fix);
       Serial.print(" quality: "); Serial.println((int)GPS_PERSON.fixquality);
@@ -180,6 +214,6 @@ void loop()                     // run over and over again
         Serial.print("Satellites: "); Serial.println((int)GPS_PERSON.satellites);
       }
       Serial.print(" *************************** \n\n");
-    }
+       }
   }
 }
