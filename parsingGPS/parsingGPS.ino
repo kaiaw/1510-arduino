@@ -35,13 +35,8 @@ GPS GPS_CAM(&camSerial);
 // If using hardware serial, comment
 // out the above two lines and enable these two lines instead:
 HardwareSerial personSerial = Serial1;
-//SoftwareSerial personSerial(6, 5) // TX på 6, RX på 5
 GPS GPS_PERSON(&personSerial);
 
-
-// Set GPSECHO to 'false' to turn off echoing the GPS data to the Serial console
-// Set to 'true' if you want to debug and listen to the raw GPS sentences
-#define GPSECHO  false
 
 //required for fmod()
 #include <math.h>
@@ -126,33 +121,26 @@ void loop()                     // run over and over again
   c = GPS_CAM.read();
   p = GPS_PERSON.read();
 
-  // if you want to debug, this is a good time to do it!
-  //if ((c) && (GPSECHO))
-  // Serial.write(c); 
-    
-  //if ((p) && (GPSECHO))
-  //  Serial.write(p);
   
   // if a sentence is received, we can check the checksum, parse it...
   if (GPS_CAM.newNMEAreceived()) {
     // a tricky thing here is if we print the NMEA sentence, or data
     // we end up not listening and catching other sentences! 
     // so be very wary if using OUTPUT_ALLDATA and trytng to print out data
+    // this also sets the newNMEAreceived() flag to false
 
     /* Serial.print("CAM GPS SOFTWARESERIAL: \n"); */
     /* Serial.println(GPS_CAM.lastNMEA()); */
     /* Serial.println("\n"); */
 
     
-
-    // this also sets the newNMEAreceived() flag to false
-  
-    // Save parse status 
+     // Save parse status 
     parseStatusCam = GPS_CAM.parse(GPS_CAM.lastNMEA());
   }
   
   // Do the same for the other GPS. 
   if (GPS_PERSON.newNMEAreceived()) {
+
     /* Serial.print("PERSON GPS HARDWARESERIAL: \n"); */
     /* Serial.println(GPS_PERSON.lastNMEA()); */
     /* Serial.println("\n"); */
