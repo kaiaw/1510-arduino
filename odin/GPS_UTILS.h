@@ -9,3 +9,5 @@ double getDiseredPitchAngle(double altCamera, double altPerson, double latCamera
 double getDistance(double latCameraDeg, double longCameraDeg, double latPersonDeg, double longPersonDeg);
 
 double degToRad(double deg);
+
+int compassDirection(char direction);

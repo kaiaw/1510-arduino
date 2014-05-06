@@ -79,3 +79,10 @@ double degToRad(double deg)
 {
   return deg*M_PI/180:
 }
+
+int compassDirection(char direction)
+{  
+  if(direction = 'S' || direction = 'W') return -1;
+  
+  return 1;
+}
