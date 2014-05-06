@@ -1,7 +1,7 @@
 #include <GPS.h>
 #include <SoftwareSerial.h>
 #include "GPS_READER.h"
-#include "getDesiredAngle.h"
+#include "gpsUtils.h"
 //xbee uses serial1
 
 #define GPS_IN   8   // digital 8
