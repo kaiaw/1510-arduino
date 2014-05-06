@@ -11,4 +11,8 @@ double getDistance(double latCameraDeg, double longCameraDeg, double latPersonDe
 
 double degToRad(double deg);
 
+<<<<<<< HEAD
 #endif
+=======
+int compassDirection(char direction);
+>>>>>>> cd8b518650683452e3d09b945d4f290fa1c94281

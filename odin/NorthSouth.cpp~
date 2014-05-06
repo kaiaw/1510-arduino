@@ -1,0 +1,6 @@
+int GPS_UTILS::compassDirrection(char direction){
+  if(direction = 'N' || direction = 'E'){
+    return 1;
+  }
+  return 1;
+}

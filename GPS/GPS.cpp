@@ -85,16 +85,20 @@ boolean GPS::parse(char *nmea) {
     latitude = atof(p);
 
     p = strchr(p, ',')+1;
+    latitude = latitude*compassDirection(p[0]);
+
     if (p[0] == 'N') lat = 'N';
     else if (p[0] == 'S') lat = 'S';
     else if (p[0] == ',') lat = 0;
     else return false;
 
-    // parse out longitude
+     // parse out longitude
     p = strchr(p, ',')+1;
     longitude = atof(p);
 
     p = strchr(p, ',')+1;
+    longitude = longitude*compassDirection(p[0]);
+
     if (p[0] == 'W') lon = 'W';
     else if (p[0] == 'E') lon = 'E';
     else if (p[0] == ',') lon = 0;
@@ -151,6 +155,7 @@ boolean GPS::parse(char *nmea) {
 
     // parse out longitude
     p = strchr(p, ',')+1;
+
     longitude = atof(p);
 
     p = strchr(p, ',')+1;
