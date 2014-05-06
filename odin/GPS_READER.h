@@ -3,7 +3,7 @@
 #ifndef __GPS_READER__
 #define __GPS_READER__
 
-#include <GPS.h>
+#include "../GPS/GPS.h"
 #include "GPS_READER.h"
 #include <SoftwareSerial.h>
 //required for fmod()
