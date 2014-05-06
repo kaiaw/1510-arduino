@@ -64,7 +64,7 @@ double getDistance(double latCameraDeg, double longCameraDeg,
   double latCam = degToRad(latCameraDeg);
   double latPer = degToRad(latPersonDeg);
 
-  double deltaLat = latPerson - latCam;
+  double deltaLat = latPer - latCam;
   double deltaLong = degToRad(longPersonDeg) - degToRad(longCameraDeg);
 
   double a = sin(deltaLat/2)*sin(deltaLat/2) +
@@ -73,11 +73,13 @@ double getDistance(double latCameraDeg, double longCameraDeg,
 
   double c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
+  return c * EARTH_RADIUS;
+
 }
 
 double degToRad(double deg)
 {
-  return deg*M_PI/180:
+  return deg*M_PI/180;
 }
 
 int compassDirection(char direction)
