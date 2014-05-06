@@ -19,9 +19,15 @@
 //required for fmod()
 #include <math.h>
 
-GPS* GPS_CAM;
-GPS* GPS_PERSON;
-SoftwareSerial* camSerial;
+SoftwareSerial *camSerial;
+GPS *GPS_CAM;
+GPS *GPS_PERSON;
+
+int GPS_IN_PIN = 8;   // digital 8
+int GPS_OUT_PIN = 9;   // digital 9
+//GPS *GPS_CAM;
+//GPS *GPS_PERSON;
+//SoftwareSerial* camSerial;
 
 // Connect the GPS Power pin to 5V
 // Connect the GPS Ground pin to ground
@@ -53,14 +59,20 @@ double convertDegMinToDecDeg (float degMin) {
 
 void setupGPS(void)  
 {
+  
+  //C++ does not allow us to use temporary assigned memory adresses.
+  //We avoid this by making a temporary object, and then getting that ones adress.
+  SoftwareSerial tempSoftSerial = SoftwareSerial(GPS_OUT_PIN, GPS_IN_PIN);
+  camSerial = &tempSoftSerial; // TX, RX
 
-camSerial = &SoftwareSerial(9, 8); // TX, RX
-GPS_CAM = &GPS(camSerial);
+  GPS tempGPS_CAM = GPS(camSerial);
 
-// If using hardware serial, comment
-// out the above two lines and enable these two lines instead:
+  GPS_CAM = &tempGPS_CAM;
 
-GPS_PERSON = &GPS(&Serial1);
+  // If using hardware serial, comment
+  // out the above two lines and enable these two lines instead:
+  GPS tempGPS_PERSON = GPS(&Serial1);
+  GPS_PERSON = &tempGPS_PERSON;
 
     
   // connect at 115200 so we can read the GPS fast enough and echo without dropping chars

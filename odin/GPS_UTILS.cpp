@@ -1,7 +1,5 @@
 #include "GPS_UTILS.h"
 
-
-
 /**
    Calculates camera yaw angle, (or z-axis angle). 
 
@@ -10,8 +8,8 @@
    LatPerson:   Person Latitude
    LongPerson:  Person Longitude
  **/
-double getDesiredYawAngle(double latCamera, double longCamera, double latPerson,
-                                 double longPerson) {
+double getDesiredYawAngle(double latCamera, double longCamera, double latPerson, double longPerson)
+{
   // Calculate distances fron camera to person in X and Y direction. 
   double dX = longPerson - longCamera;
   double dY = latPerson - latCamera;
@@ -31,8 +29,7 @@ double getDesiredYawAngle(double latCamera, double longCamera, double latPerson,
    LatPerson:   Person latitude
    LongPerson:  Person longitude
  **/
-double getDiseredPitchAngle(double altCamera, double altPerson, double latCamera, double longCamera, double latPerson, 
-                                 double longPerson)
+double getDesiredPitchAngle(double altCamera, double altPerson, double latCamera, double longCamera, double latPerson, double longPerson)
 {
   double dX = longPerson - longCamera;
   double dY = latPerson - latCamera;
