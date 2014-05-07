@@ -72,16 +72,6 @@ uint32_t timer = millis();
 // MAIN LOOP.
 void loop() {
   
-    double bislettBabbLat = 59.920761;
-  double bislettBabbLong = 10.733468;
-  
-  double guttaLat = 59.924514;
-  double guttaLong = 10.739519;
-  // read the input on analog pin 0:
-  double degrees = getDesiredCameraDirection(bislettBabbLat, bislettBabbLong, guttaLat, guttaLong);
-  // print out the value you read:
-  Serial.println(degrees);
-  delay(100);        // delay in between reads for stability
 
 
   getGPSdata();

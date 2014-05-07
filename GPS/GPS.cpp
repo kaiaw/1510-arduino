@@ -71,7 +71,10 @@ boolean GPS::parse(char *nmea) {
     // found GGA
     char *p = nmea;
     // get time
-    p = strchr(p, ',')+1;
+     p = strchr(p, ',')+1;
+
+     //could be usefull later
+    /*
     float timef = atof(p);
     uint32_t time = timef;
     hour = time / 10000;
@@ -79,6 +82,7 @@ boolean GPS::parse(char *nmea) {
     seconds = (time % 100);
 
     milliseconds = fmod(timef, 1.0) * 1000;
+    */
 
     // parse out latitude
     p = strchr(p, ',')+1;
@@ -87,10 +91,10 @@ boolean GPS::parse(char *nmea) {
     p = strchr(p, ',')+1;
     latitude = latitude*compassDirection(p[0]);
 
-    if (p[0] == 'N') lat = 'N';
+    /*  if (p[0] == 'N') lat = 'N';
     else if (p[0] == 'S') lat = 'S';
     else if (p[0] == ',') lat = 0;
-    else return false;
+    else return false;*/
 
      // parse out longitude
     p = strchr(p, ',')+1;
@@ -99,10 +103,10 @@ boolean GPS::parse(char *nmea) {
     p = strchr(p, ',')+1;
     longitude = longitude*compassDirection(p[0]);
 
-    if (p[0] == 'W') lon = 'W';
+    /*   if (p[0] == 'W') lon = 'W';
     else if (p[0] == 'E') lon = 'E';
     else if (p[0] == ',') lon = 0;
-    else return false;
+    else return false; */
 
     p = strchr(p, ',')+1;
     fixquality = atoi(p);
