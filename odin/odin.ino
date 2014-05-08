@@ -4,6 +4,9 @@
 #include "GPS_UTILS.h"
 //xbee uses serial1
 
+#define MIN_TILT 40  
+#define MAX_TILT 140
+
 #define GPS_IN   8   // digital 8
 #define GPS_OUT  9   // digital 9
 
