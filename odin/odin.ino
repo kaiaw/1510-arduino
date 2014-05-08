@@ -1,3 +1,4 @@
+#include "GPS.h"
 #include <SoftwareSerial.h>
 #include "GPS_READER.h"
 #include "GPS_UTILS.h"
