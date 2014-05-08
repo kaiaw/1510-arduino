@@ -81,7 +81,7 @@ double degToRad(double deg)
 
 int compassDirection(char direction)
 {  
-  if(direction = 'S' || direction = 'W') return -1;
+  if(direction == 'S' || direction == 'W') return -1;
   
   return 1;
 }
