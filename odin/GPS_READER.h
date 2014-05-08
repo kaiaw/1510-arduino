@@ -3,7 +3,7 @@
 #ifndef __GPS_READER__
 #define __GPS_READER__
 
-#include <GPS.h>
+#include "GPS.h"
 #include <SoftwareSerial.h>
 
 extern SoftwareSerial *camSerial;

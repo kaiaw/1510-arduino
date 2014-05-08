@@ -1,4 +1,4 @@
-#include <GPS.h>
+
 #include <SoftwareSerial.h>
 #include "GPS_READER.h"
 #include "GPS_UTILS.h"
@@ -38,7 +38,7 @@ void loop() {
   //double degrees = getDesiredPitchAngle(bislettBabbLat, bislettBabbLong, guttaLat, guttaLong);
   // print out the value you read:
   //Serial.println(degrees);
-  delay(100);        // delay in between reads for stability
+  // delay(100);        // delay in between reads for stability
 
 
   getGPSdata();

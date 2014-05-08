@@ -1,11 +1,12 @@
 
 
-#ifndef _GPS_H
-#define _GPS_H
+#ifndef __GPS_H__
+#define __GPS_H__
 
 
 #include <SoftwareSerial.h>
 #include "Arduino.h"
+
 
 
 #define PMTK_SET_NMEA_UPDATE_1HZ  "$PMTK220,1000*1F"
