@@ -2,6 +2,12 @@
 #include <SoftwareSerial.h>
 #include "GPS_READER.h"
 #include "GPS_UTILS.h"
+#include <Adafruit_Sensor.h>
+#include <Adafruit_LSM303_U.h>
+#include <Adafruit_L3GD20_U.h>
+#include <Adafruit_9DOF.h>
+#include <Wire.h>
+#include "IMU.h"
 //xbee uses serial1
 
 #define MIN_TILT 40  
@@ -18,11 +24,18 @@
 #define Servo_3  12  // digital 12
 
 #define pushbtn  7   // digital 7
-#define led      6
+#define led      6   // digital 6
+
+
 
 void setup() {
   setupGPS();
+  setupIMU();
 }
+
+double presentYawAngle, desiredYawAngle;
+double presentPitchAngle, desiredPitchAngle;
+
 
 uint32_t timer = millis();
 
