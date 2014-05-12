@@ -16,6 +16,9 @@
 /* extern int roll; */
 
 void setupIMU();
-int getRoll(void);
+double getRollIMU(void);
+double getPitchIMU(void);
+double getYawIMU(void);
+
 
 #endif
