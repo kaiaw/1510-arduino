@@ -11,9 +11,6 @@
 #include <Servo.h>
 //xbee uses serial1
 
-#define MIN_TILT 40  
-#define MAX_TILT 140
-
 #define GPS_IN   8   // digital 8
 #define GPS_OUT  9   // digital 9
 
@@ -27,6 +24,8 @@
 #define pushbtn  7   // digital 7
 #define led      6   // digital 6
 
+#define MIN_ROLL 40  
+#define MAX_ROLL 140
 
 Servo servoYaw, servoPitch, servoRoll;
 
@@ -102,12 +101,16 @@ void loop() {
   IMU_YAW = getYawIMU()-90;
   
   IMU_PITCH = getPitchIMU();
-
+  
   IMU_ROLL = getRollIMU();
   
    
-  /*'orientation' should have valid .roll and .pitch fields
-  */   
+  // Limit roll to between +/- 50 degrees. 
+  if (IMU_ROLL < MIN_ROLL) IMU_ROLL = MIN_ROLL;
+  else if (IMU_ROLL > MAX_ROLL) IMU_ROLL = MAX_ROLL;
+
+  // 'orientation' should have valid .roll and .pitch fields
+     
   rollServoDegrees = map(IMU_ROLL, -90, 90, 0, 179);
 
   /* Mapping the difference between IMU and GPS to step values
