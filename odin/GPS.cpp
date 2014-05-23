@@ -72,13 +72,13 @@ boolean GPS::parse(char *nmea) {
     char *p = nmea;
     // get time
     p = strchr(p, ',')+1;
-    float timef = atof(p);
-    uint32_t time = timef;
-    hour = time / 10000;
-    minute = (time % 10000) / 100;
-    seconds = (time % 100);
+    // float timef = atof(p);
+    // uint32_t time = timef;
+    // hour = time / 10000;
+    // minute = (time % 10000) / 100;
+    // seconds = (time % 100);
 
-    milliseconds = fmod(timef, 1.0) * 1000;
+    // milliseconds = fmod(timef, 1.0) * 1000;
 
     // parse out latitude
     p = strchr(p, ',')+1;
@@ -111,13 +111,13 @@ boolean GPS::parse(char *nmea) {
     satellites = atoi(p);
 
     p = strchr(p, ',')+1;
-    HDOP = atof(p);
+    // HDOP = atof(p);             
 
     p = strchr(p, ',')+1;
     altitude = atof(p);
     p = strchr(p, ',')+1;
     p = strchr(p, ',')+1;
-    geoidheight = atof(p);
+    // geoidheight = atof(p);
     return true;
   }
   if (strstr(nmea, "$GPRMC")) {
@@ -126,14 +126,14 @@ boolean GPS::parse(char *nmea) {
 
     // get time
     p = strchr(p, ',')+1;
-    float timef = atof(p);
-    uint32_t time = timef;
-    hour = time / 10000;
-    minute = (time % 10000) / 100;
-    seconds = (time % 100);
+    // float timef = atof(p);
+    // uint32_t time = timef;
+    // hour = time / 10000;
+    // minute = (time % 10000) / 100;
+    // seconds = (time % 100);
 
-    milliseconds = fmod(timef, 1.0) * 1000;
-
+    // milliseconds = fmod(timef, 1.0) * 1000;
+    
     p = strchr(p, ',')+1;
     // Serial.println(p);
     if (p[0] == 'A') 
@@ -174,9 +174,9 @@ boolean GPS::parse(char *nmea) {
 
     p = strchr(p, ',')+1;
     uint32_t fulldate = atof(p);
-    day = fulldate / 10000;
-    month = (fulldate % 10000) / 100;
-    year = (fulldate % 100);
+    // day = fulldate / 10000;
+    // month = (fulldate % 10000) / 100;
+    // year = (fulldate % 100);
 
     // we dont parse the remaining, yet!
     return true;

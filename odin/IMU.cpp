@@ -17,18 +17,22 @@ double yaw;
 
 void setupIMU()
 {
+  Serial.println("Setting up IMU");
   if(!accel.begin())
   {
     /* There was a problem detecting the LSM303 ... check your connections */
     Serial.println(F("Ooops, no LSM303 detected ... Check your wiring!"));
     while(1);
   }
+  
+  Serial.println("Accel works");
   if(!mag.begin())
   {
     /* There was a problem detecting the LSM303 ... check your connections */
     Serial.println("Ooops, no LSM303 detected ... Check your wiring!");
     while(1);
   }
+  Serial.println("SetupIMU done!");
 }
 
 double getRollIMU(void)

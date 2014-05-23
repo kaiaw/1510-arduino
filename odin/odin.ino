@@ -14,8 +14,8 @@
 #define GPS_IN   8   // digital 8
 #define GPS_OUT  9   // digital 9
 
-#define IMU_SCL  1   // analog  1
-#define IMU_SDA  0   // analog  0
+#define IMU_SCL  3   // analog  3
+#define IMU_SDA  2   // analog  2
 
 #define ServoRollPin   10  // digital 10
 #define ServoPitchPin  11  // digital 11
@@ -43,25 +43,36 @@ uint32_t timer = millis();
 
 
 void setup() {
-  setupGPS();
+//  setupGPS();
+Serial.begin(9600);
+  delay(2000);
+   Serial.println("setup beguin");
   setupIMU();
+   Serial.println("imu setupd done");
   servoRoll.attach(ServoRollPin); 
   servoPitch.attach(ServoPitchPin); 
   servoYaw.attach(ServoYawPin);
+   Serial.println("attatching servos");
+  delay(1000);
+  servoRoll.write(90);     // Set to tart position.
+  servoPitch.write(90);    // 
+  servoYaw.write(127.5);   // 127.5 is zero speed!
+  delay(2000);             // Time to check start pos. 
   pinMode(pushbtn, INPUT);
+  Serial.write("setup done");
+   Serial.println("setup done");
 }
 
 
 // MAIN LOOP.
 void loop() {
 
-
   /* if the push button is pressed we reset the position
      and returns
    */
   if(digitalRead(pushbtn) == HIGH){
-      servoRoll.write(0);
-      servoPitch.write(0);
+      servoRoll.write(90);
+      servoPitch.write(90);
       servoYaw.write(127.5);
       return;
   }
@@ -84,7 +95,8 @@ void loop() {
 
 
   /* updating GPS_CAM and CPS_PERSON*/
-  getGPSdata();
+ // getGPSdata();
+  Serial.write("getting gps data");
 
   /* Get angles between Bara Dur GPS and The Ring GPS */
   GPS_PITCH = getDesiredPitchAngle(GPS_CAM->altitude, GPS_PERSON->altitude,
@@ -111,11 +123,11 @@ void loop() {
 
   // 'orientation' should have valid .roll and .pitch fields
      
-  rollServoDegrees = map(IMU_ROLL, -90, 90, 0, 179);
+  rollServoDegrees = map(IMU_ROLL, -90, 90, 0, 179); // 
 
   /* Mapping the difference between IMU and GPS to step values
   */ 
-  pitchServoDegrees = map(IMU_PITCH-GPS_PITCH, -60, 60, 0, 179);
+  pitchServoDegrees = map(IMU_PITCH-GPS_PITCH, -90, 90, 0, 179);
 
   /* Mapping the difference between IMU and GPS to torque values between 120 - 135.
      126-128 degrees stops the servo.

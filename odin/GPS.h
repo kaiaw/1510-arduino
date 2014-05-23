@@ -64,8 +64,8 @@ class GPS {
   boolean parse(char *nmea);
   uint8_t parseHex(char c);
 
-  uint8_t hour, minute, seconds, year, month, day;
-  uint16_t milliseconds;
+  /* uint8_t hour, minute, seconds, year, month, day; */
+  /* uint16_t milliseconds; */
   float latitude, longitude, geoidheight, altitude;
   float speed, angle, magvariation, HDOP;
   char lat, lon, mag;
