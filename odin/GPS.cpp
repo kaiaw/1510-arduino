@@ -203,12 +203,29 @@ char GPS::read(void) {
   char c = 0;
   
   if(gpsSwSerial) {
-    if(!gpsSwSerial->available()) return c;
+    return c;
+    
+    if(!gpsSwSerial->available()){
+      return c;
+    }
+    
     c = gpsSwSerial->read();
-  } 
-  else {
-    if(!gpsHwSerial->available()) return c;
+    delay(1);
+
+  } else {
+
+    if(!gpsHwSerial->available()){
+      //Serial.print("HW !avail ");
+      //delay(1);
+      //Serial.println(c);
+      //delay(1);
+      return c;
+    }
     c = gpsHwSerial->read();
+    //Serial.print("Hw read ");
+    //Serial.println(c);
+    //delay(1);
+
   }
     
   if (c == '$') {

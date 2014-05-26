@@ -77,13 +77,16 @@ void setupGPS(void)
     
   // connect at 115200 so we can read the GPS fast enough and echo without dropping chars
   // also spit it out
-  Serial.begin(115200);
-  delay(5000);
-  Serial.println("Adafruit GPS library basic test!");
-
+  //Serial.begin(9600);
+  while(!Serial);
+  //delay(2000);
+  Serial.println(F("Adafruit GPS library basic test!"));
+  delay(1000);
   // 9600 NMEA is the default baud rate for Adafruit MTK GPS's- some use 4800
   GPS_CAM->begin(9600);
   GPS_PERSON->begin(9600);
+  while(!Serial1);
+  //GPS_PERSON->begin(9600);
   
   // uncomment this line to turn on RMC (recommended minimum) and GGA (fix data) including altitude
   //GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
@@ -127,17 +130,47 @@ boolean parseStatusPerson;
   data is stored in the same GPS object. 
 */
 
+void getGPSdataFromPerson(void)
+{
+  char c = -1;
+  while ((c = GPS_PERSON->read()) != -1){
+    if(GPS_PERSON->newNMEAreceived()) {
+      parseStatusPerson = GPS_PERSON->parse(GPS_PERSON->lastNMEA());
+      return;
+    }
+  }
+  
+}
+
+void getGPSdataFromCamera(void)
+{
+  char p = -1;
+  while (p = GPS_CAM->read() != -1){
+    if(GPS_CAM->newNMEAreceived()) {
+      return;
+    }
+  }
+  
+}
+
+
 
 void getGPSdata(void)                     // run over and over again
 {
+  Serial.println(F("Get GPS Data"));
+  getGPSdataFromPerson();
+  return;
   char c, p;
   
-  c = GPS_CAM->read();
+  //c = GPS_CAM->read();
+  delay(2);
   p = GPS_PERSON->read();
+  delay(2);
 
   
   // if a sentence is received, we can check the checksum, parse it...
-  if (GPS_CAM->newNMEAreceived()) {
+  //while (GPS_CAM->newNMEAreceived()) {
+  while (false) {
     // a tricky thing here is if we print the NMEA sentence, or data
     // we end up not listening and catching other sentences! 
     // so be very wary if using OUTPUT_ALLDATA and trytng to print out data
@@ -150,16 +183,18 @@ void getGPSdata(void)                     // run over and over again
     
     // Save parse status 
     parseStatusCam = GPS_CAM->parse(GPS_CAM->lastNMEA());
+    c = GPS_CAM->read();
+    delay(5);
   }
   
   // Do the same for the other GPS. 
-  if (GPS_PERSON->newNMEAreceived()) {
-
-    /* Serial.print("PERSON GPS HARDWARESERIAL: \n"); */
-    /* Serial.println(GPS_PERSON->lastNMEA()); */
-    /* Serial.println("\n"); */
-    
-    parseStatusPerson = GPS_PERSON->parse(GPS_PERSON->lastNMEA());   
+  if(GPS_PERSON->newNMEAreceived()) {
+    delay(10);
+/*    Serial.print("PERSON GPS HARDWARESERIAL: \n");
+    Serial.println(GPS_PERSON->lastNMEA());
+    Serial.println("\n");
+  */  
+    parseStatusPerson = GPS_PERSON->parse(GPS_PERSON->lastNMEA());
   }  
 
 }
@@ -167,21 +202,21 @@ void getGPSdata(void)                     // run over and over again
 void printGPSdata(GPS* gps) {
 
   
-  Serial.print("\n ******** GPS CAM SoftwareSerial ********* \n");
-  Serial.print("fix: "); Serial.print((int)gps->fix);
-  Serial.print(" quality: "); Serial.println((int)gps->fixquality);
+  //Serial.print("\n ******** GPS CAM SoftwareSerial ********* \n");
+  Serial.print(F("fix: ")); Serial.print((int)gps->fix);
+  Serial.print(F(" quality: ")); Serial.println((int)gps->fixquality);
       
   if (gps->fix) {
-    Serial.print("Latitude: ");
+    Serial.print(F("Latitude: "));
     Serial.println(convertDegMinToDecDeg(gps->latitude), 6); 
-    Serial.print("Longitude: "); 
+    Serial.print(F("Longitude: ")); 
     Serial.println(convertDegMinToDecDeg(gps->longitude), 6);
     //Serial.print("Angle: "); Serial.println(gps->angle);
-    Serial.print("Altitude: "); Serial.println(gps->altitude);
-    Serial.print("Speed (knots): "); Serial.println(gps->speed);
-    Serial.print("Satellites: "); Serial.println((int)gps->satellites);
+    Serial.print(F("Altitude: ")); Serial.println(gps->altitude);
+    Serial.print(F("Speed (knots): ")); Serial.println(gps->speed);
+    Serial.print(F("Satellites: ")); Serial.println((int)gps->satellites);
   }
-  Serial.print(" *************************** \n\n");
+  Serial.print(F(" *************************** \n\n"));
       
 }
 
