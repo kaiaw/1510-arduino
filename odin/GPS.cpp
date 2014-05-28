@@ -1,6 +1,6 @@
 
-#include <GPS.h>
-
+#include "GPS.h"
+#include "GPS_UTILS.h"
 
 GPS::GPS(SoftwareSerial *ser)
 {
@@ -33,11 +33,16 @@ void GPS::common_init(void) {
 
 void GPS::begin(uint16_t baud)
 {
-  if(gpsSwSerial) 
+  if(gpsSwSerial != NULL){
     gpsSwSerial->begin(baud);
-  else
+    while(!gpsSwSerial);
+    gpsSwSerial->listen();
+  }
+  else{
     gpsHwSerial->begin(baud);
-  delay(10);
+    while(!gpsHwSerial);
+  }
+  delay(1);
 }
 
 void GPS::sendCommand(char *str) {
@@ -205,14 +210,38 @@ uint8_t GPS::parseHex(char c) {
 
 char GPS::read(void) {
   char c = 0;
-  
+
   if(gpsSwSerial) {
-    if(!gpsSwSerial->available()) return c;
+    /*
+    if (gpsSwSerial->isListening()){
+      Serial.println("Is listening");
+      delay(2);
+    }
+    Serial.println(F("Avail?"));
+    delay(5);
+    if(gpsSwSerial->available()){
+      delay(1);
+      return c;
+    }
+    */
+    delay(2);
     c = gpsSwSerial->read();
-  } 
-  else {
-    if(!gpsHwSerial->available()) return c;
+    delay(1);
+
+  } else {
+
+    if(!gpsHwSerial->available()){
+      //Serial.print("HW !avail ");
+      //delay(1);
+      //Serial.println(c);
+      //delay(1);
+      return c;
+    }
     c = gpsHwSerial->read();
+    //Serial.print("Hw read ");
+    //Serial.println(c);
+    //delay(1);
+
   }
     
   if (c == '$') {

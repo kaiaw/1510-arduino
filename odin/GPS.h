@@ -1,6 +1,11 @@
+
+
+#ifndef __GPS_H__
+#define __GPS_H__
+
+
+#include <SoftwareSerial.h>
 #include "Arduino.h"
-#include "SoftwareSerial.h"
-#include "HardwareSerial.h"
 
 #define PMTK_SET_NMEA_UPDATE_1HZ  "$PMTK220,1000*1F"
 #define PMTK_SET_NMEA_UPDATE_5HZ  "$PMTK220,200*2C"
@@ -43,18 +48,21 @@
 
 // how long to wait when we're looking for a response
 #define MAXWAITSENTENCE 5
+#define MAXLINELENGTH 120
 
 
 class GPS {
  public:
   void begin(uint16_t baud);
   GPS(SoftwareSerial *ser); // Constructor when using SoftwareSerial
-  GPS(HardwareSerial *ser);
+  GPS(HardwareSerial *ser); // Constructor when using HardwareSerial
   char *lastNMEA(void);
   boolean newNMEAreceived();
   void common_init(void);
+  void sendCommand(char *);
   char read(void);
-  boolean parse(char *);
+  boolean parse(char *nmea);
+  uint8_t parseHex(char c);
 
   uint8_t hour, minute, seconds, year, month, day;
   uint16_t milliseconds;
@@ -64,6 +72,18 @@ class GPS {
   boolean fix;
   uint8_t fixquality, satellites;
 
+// we double buffer: read one line in and leave one for the main program
+  volatile char line1[MAXLINELENGTH];
+  volatile char line2[MAXLINELENGTH];
+  // our index into filling the current line
+  volatile uint8_t lineidx;
+  // pointers to the double buffers
+  volatile char *currentline;
+  volatile char *lastline;
+  volatile boolean recvdflag;
+  volatile boolean inStandbyMode;
+
   SoftwareSerial *gpsSwSerial;
   HardwareSerial *gpsHwSerial;
-}
+};
+#endif

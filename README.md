@@ -12,6 +12,9 @@
 * Kai Wig
 
 
+<<<<<<< HEAD
 ## We are actually really cool. Trust us, we're kind of engineers.
 
 :D
+=======
+>>>>>>> origin/beta2

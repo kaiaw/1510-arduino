@@ -19,9 +19,15 @@
 //required for fmod()
 #include <math.h>
 
-GPS* GPS_CAM;
-GPS* GPS_PERSON;
-SoftwareSerial* camSerial;
+SoftwareSerial *camSerial;
+GPS *GPS_CAM;
+GPS *GPS_PERSON;
+
+int GPS_IN_PIN = 8;   // digital 8
+int GPS_OUT_PIN = 9;   // digital 9
+//GPS *GPS_CAM;
+//GPS *GPS_PERSON;
+//SoftwareSerial* camSerial;
 
 // Connect the GPS Power pin to 5V
 // Connect the GPS Ground pin to ground
@@ -53,24 +59,31 @@ double convertDegMinToDecDeg (float degMin) {
 
 void setupGPS(void)  
 {
+  
+  //C++ does not allow us to use temporary assigned memory adresses.
+  //We avoid this by making a temporary object, and then getting that ones adress.
+  SoftwareSerial tempSoftSerial = SoftwareSerial(GPS_OUT_PIN, GPS_IN_PIN);
+  camSerial = &tempSoftSerial; // TX, RX
+  GPS tempGPS_CAM = GPS(camSerial);
 
-camSerial = &SoftwareSerial(9, 8); // TX, RX
-GPS_CAM = &GPS(camSerial);
+  GPS_CAM = &tempGPS_CAM;
 
-// If using hardware serial, comment
-// out the above two lines and enable these two lines instead:
-
-GPS_PERSON = &GPS(&Serial1);
+  // If using hardware serial, comment
+  // out the above two lines and enable these two lines instead:
+  GPS tempGPS_PERSON = GPS(&Serial1);
+  GPS_PERSON = &tempGPS_PERSON;
 
     
   // connect at 115200 so we can read the GPS fast enough and echo without dropping chars
   // also spit it out
-  Serial.begin(115200);
-  delay(5000);
-  Serial.println("Adafruit GPS library basic test!");
-
+  //Serial.begin(9600);
+  //while(!Serial);
+  //delay(2000);
+  //Serial.println(F("Adafruit GPS library basic test!"));
+  delay(500);
   // 9600 NMEA is the default baud rate for Adafruit MTK GPS's- some use 4800
-  GPS_CAM->begin(9600);
+  //GPS_CAM->begin(9600);
+  GPS_CAM->begin(115200);
   GPS_PERSON->begin(9600);
   
   // uncomment this line to turn on RMC (recommended minimum) and GGA (fix data) including altitude
@@ -89,7 +102,7 @@ GPS_PERSON = &GPS(&Serial1);
   
   // Set the update rate
   GPS_CAM->sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
-  GPS_PERSON->sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
+  GPS_PERSON->sendCommand(PMTK_SET_NMEA_UPDATE_10HZ);   // 10 Hz update rate
   // For the parsing code to work nicely and have time to sort thru the data, and
   // print it out we don't suggest using anything higher than 1 Hz
 
@@ -115,61 +128,75 @@ boolean parseStatusPerson;
   data is stored in the same GPS object. 
 */
 
+void getGPSdataFromPerson(void)
+{
+  char c = -1;
+  while (c = GPS_PERSON->read()){
+
+    if(GPS_PERSON->newNMEAreceived()) {
+      parseStatusPerson = GPS_PERSON->parse(GPS_PERSON->lastNMEA());
+      return;
+    }
+  }
+  
+}
+
+void getGPSdataFromCamera(void)
+{
+  char p = 0;
+  while ((p = GPS_CAM->read())){
+    if (p == -1){
+      return;
+    }
+    
+    Serial.print((char)p);
+    delay(5);
+
+    if(GPS_CAM->newNMEAreceived()) {
+      parseStatusCam = GPS_CAM->parse(GPS_CAM->lastNMEA());
+      return;
+    }
+  }
+  Serial.println("\Camera read");
+  delay(1);
+  
+}
+
+
 
 void getGPSdata(void)                     // run over and over again
 {
-  char c, p;
-  
-  c = GPS_CAM->read();
-  p = GPS_PERSON->read();
 
-  
-  // if a sentence is received, we can check the checksum, parse it...
-  if (GPS_CAM->newNMEAreceived()) {
-    // a tricky thing here is if we print the NMEA sentence, or data
-    // we end up not listening and catching other sentences! 
-    // so be very wary if using OUTPUT_ALLDATA and trytng to print out data
-    // this also sets the newNMEAreceived() flag to false
+  /* Collect data from internal GPS */
+  /* !! Discarded because it sometimes makes the program malfunction !! */
+  //getGPSdataFromCamera();
 
-    /* Serial.print("CAM GPS SOFTWARESERIAL: \n"); */
-    /* Serial.println(GPS.lastNMEA()); */
-    /* Serial.println("\n"); */
-
-    
-    // Save parse status 
-    parseStatusCam = GPS_CAM->parse(GPS_CAM->lastNMEA());
-  }
-  
-  // Do the same for the other GPS. 
-  if (GPS_PERSON->newNMEAreceived()) {
-
-    /* Serial.print("PERSON GPS HARDWARESERIAL: \n"); */
-    /* Serial.println(GPS_PERSON->lastNMEA()); */
-    /* Serial.println("\n"); */
-    
-    parseStatusPerson = GPS_PERSON->parse(GPS_PERSON->lastNMEA());   
-  }  
-
+  /* Collect data from external GPS */
+  getGPSdataFromPerson();
 }
 
+/**
+  *  Print out test-data to Serial for testing purposes.
+  *
+  */
 void printGPSdata(GPS* gps) {
 
   
-  Serial.print("\n ******** GPS CAM SoftwareSerial ********* \n");
-  Serial.print("fix: "); Serial.print((int)gps->fix);
-  Serial.print(" quality: "); Serial.println((int)gps->fixquality);
+  //Serial.print("\n ******** GPS CAM SoftwareSerial ********* \n");
+  Serial.print(F("fix: ")); Serial.print((int)gps->fix);
+  Serial.print(F(" quality: ")); Serial.println((int)gps->fixquality);
       
   if (gps->fix) {
-    Serial.print("Latitude: ");
+    Serial.print(F("Latitude: "));
     Serial.println(convertDegMinToDecDeg(gps->latitude), 6); 
-    Serial.print("Longitude: "); 
+    Serial.print(F("Longitude: ")); 
     Serial.println(convertDegMinToDecDeg(gps->longitude), 6);
     //Serial.print("Angle: "); Serial.println(gps->angle);
-    Serial.print("Altitude: "); Serial.println(gps->altitude);
-    Serial.print("Speed (knots): "); Serial.println(gps->speed);
-    Serial.print("Satellites: "); Serial.println((int)gps->satellites);
+    Serial.print(F("Altitude: ")); Serial.println(gps->altitude);
+    Serial.print(F("Speed (knots): ")); Serial.println(gps->speed);
+    Serial.print(F("Satellites: ")); Serial.println((int)gps->satellites);
   }
-  Serial.print(" *************************** \n\n");
+  Serial.print(F(" *************************** \n\n"));
       
 }
 
