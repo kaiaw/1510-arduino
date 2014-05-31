@@ -52,99 +52,85 @@ void GPS::sendCommand(char *str) {
     gpsHwSerial->println(str);
 }
 
-
+/**
+ * Parse data for the given GPS and store values.
+ * This will find longitude, latitude, altitude, fix and more.
+ * Values are used to calculate height and range differences and direction.
+ */
 boolean GPS::parse(char *nmea) {
-  // do checksum check
 
   // first look if we even have one
   if (nmea[strlen(nmea)-4] == '*') {
+
     uint16_t sum = parseHex(nmea[strlen(nmea)-3]) * 16;
     sum += parseHex(nmea[strlen(nmea)-2]);
     
-    // check checksum 
-    for (uint8_t i=1; i < (strlen(nmea)-4); i++) {
+    // Calculate checksum diff
+    for (uint8_t i=1; i < (strlen(nmea)-4); i++)
       sum ^= nmea[i];
-    }
-    if (sum != 0) {
-      // bad checksum :(
-      //return false;
-    }
+    
+    // Check for bad checksum
+    if (sum != 0)
+      return false;
+
   }
 
-  // look for a few common sentences
+  // Look for known keyword -> GGA
   if (strstr(nmea, "$GPGGA")) {
-    // found GGA
     char *p = nmea;
-    // get time
-     p = strchr(p, ',')+1;
 
-     //could be usefull later
-    /*
-    float timef = atof(p);
-    uint32_t time = timef;
-    hour = time / 10000;
-    minute = (time % 10000) / 100;
-    seconds = (time % 100);
-
-    milliseconds = fmod(timef, 1.0) * 1000;
-    */
-
-    // parse out latitude
+    // Get time
+    p = strchr(p, ',')+1;
+    
+    // Parse out latitude
     p = strchr(p, ',')+1;
     latitude = atof(p);
 
     p = strchr(p, ',')+1;
+
     latitude = latitude*compassDirection(p[0]);
-
-    /*  if (p[0] == 'N') lat = 'N';
-    else if (p[0] == 'S') lat = 'S';
-    else if (p[0] == ',') lat = 0;
-    else return false;*/
-
-     // parse out longitude
+    
+    // Parse out longitude
     p = strchr(p, ',')+1;
     longitude = atof(p);
-
+    
     p = strchr(p, ',')+1;
     longitude = longitude*compassDirection(p[0]);
-
-    /*   if (p[0] == 'W') lon = 'W';
-    else if (p[0] == 'E') lon = 'E';
-    else if (p[0] == ',') lon = 0;
-    else return false; */
-
+    
+    // Parse rest of the stored information
     p = strchr(p, ',')+1;
     fixquality = atoi(p);
 
     p = strchr(p, ',')+1;
     satellites = atoi(p);
-
+    
     p = strchr(p, ',')+1;
     HDOP = atof(p);
-
+    
     p = strchr(p, ',')+1;
     altitude = atof(p);
+
     p = strchr(p, ',')+1;
     p = strchr(p, ',')+1;
     geoidheight = atof(p);
+
     return true;
   }
+
+  // Look for known keyword -> RMC
   if (strstr(nmea, "$GPRMC")) {
-   // found RMC
     char *p = nmea;
 
-    // get time
+    // Get time
     p = strchr(p, ',')+1;
     float timef = atof(p);
     uint32_t time = timef;
     hour = time / 10000;
     minute = (time % 10000) / 100;
     seconds = (time % 100);
-
     milliseconds = fmod(timef, 1.0) * 1000;
-
     p = strchr(p, ',')+1;
-    // Serial.println(p);
+
     if (p[0] == 'A') 
       fix = true;
     else if (p[0] == 'V')
@@ -152,7 +138,7 @@ boolean GPS::parse(char *nmea) {
     else
       return false;
 
-    // parse out latitude
+    // Parse latitude
     p = strchr(p, ',')+1;
     latitude = atof(p);
 
@@ -168,16 +154,17 @@ boolean GPS::parse(char *nmea) {
     longitude = atof(p);
 
     p = strchr(p, ',')+1;
+
     if (p[0] == 'W') lon = 'W';
     else if (p[0] == 'E') lon = 'E';
     else if (p[0] == ',') lon = 0;
     else return false;
 
-    // speed
+    // Velocity
     p = strchr(p, ',')+1;
     speed = atof(p);
 
-    // angle
+    // Angle
     p = strchr(p, ',')+1;
     angle = atof(p);
 
@@ -187,14 +174,15 @@ boolean GPS::parse(char *nmea) {
     month = (fulldate % 10000) / 100;
     year = (fulldate % 100);
 
-    // we dont parse the remaining, yet!
+    // There is still some information left,
+    // but this is currently not relevant.
     return true;
   }
 
   return false;
 }
 
-// read a Hex value and return the decimal equivalent
+// Hexadecimal to Decimal converter
 uint8_t GPS::parseHex(char c) {
     if (c < '0')
       return 0;
@@ -207,47 +195,35 @@ uint8_t GPS::parseHex(char c) {
 }
 
 
-
+/**
+ * Read a character from the given GPS and store it.
+ */
 char GPS::read(void) {
   char c = 0;
 
+  //Check if this GPS-object communicates via SoftwareSerial
   if(gpsSwSerial) {
-    /*
-    if (gpsSwSerial->isListening()){
-      Serial.println("Is listening");
-      delay(2);
-    }
-    Serial.println(F("Avail?"));
-    delay(5);
-    if(gpsSwSerial->available()){
-      delay(1);
+
+    //If the given serial is not available, return 0.
+    if(!gpsSwSerial->available())
       return c;
-    }
-    */
-    delay(2);
-    c = gpsSwSerial->read();
-    delay(1);
+    else
+      c = gpsSwSerial->read();
 
-  } else {
+  } else { // Else it reads from HardwareSerial
 
-    if(!gpsHwSerial->available()){
-      //Serial.print("HW !avail ");
-      //delay(1);
-      //Serial.println(c);
-      //delay(1);
+    //If the given serial is not available, return 0.
+    if(!gpsHwSerial->available())
       return c;
-    }
-    c = gpsHwSerial->read();
-    //Serial.print("Hw read ");
-    //Serial.println(c);
-    //delay(1);
-
+    else
+      c = gpsHwSerial->read();
   }
     
   if (c == '$') {
     currentline[lineidx] = 0;
     lineidx = 0;
   }
+
   if (c == '\n') {
     currentline[lineidx] = 0;
 
@@ -270,10 +246,12 @@ char GPS::read(void) {
   return c;
 }
 
+// Does the object contain a full string of data?
 boolean GPS::newNMEAreceived(void) {
   return recvdflag;
 }
 
+// Get the last set of complete data
 char *GPS::lastNMEA(void) {
   recvdflag = false;
   return (char *)lastline;
