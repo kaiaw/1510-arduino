@@ -52,6 +52,7 @@ void GPS::sendCommand(char *str) {
     gpsHwSerial->println(str);
 }
 
+
 /**
  * Parse data for the given GPS and store values.
  * This will find longitude, latitude, altitude, fix and more.
