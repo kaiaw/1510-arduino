@@ -1,19 +1,21 @@
-#include <SoftwareSerial.h>
-
+// Librarys used by IMU
 #include <Adafruit_Sensor.h>
 #include <Adafruit_LSM303_U.h>
 #include <Adafruit_L3GD20_U.h>
 #include <Adafruit_9DOF.h>
-
-#include <Wire.h>
 #include "IMU.h"
-#include <Servo.h>
 
+// Librarys to use servos
+#include <Servo.h>
+#include <Wire.h>
+
+
+// Librarys used by GPS
 #include "GPS.h"
 #include "GPS_READER.h"
 #include "GPS_UTILS.h"
+#include <SoftwareSerial.h>
 
-//#include <MemoryFree.h>
 
 //xbee uses serial1
 
@@ -66,38 +68,31 @@ void setup() {
   
   pinMode(pushbtn, INPUT_PULLUP);
   
-
-  //Serial.begin(115200);
-  Serial.begin(9600);
-  //while(!Serial);  Might fail if we don't have a USB connected
-  
+  Serial.begin(9600);  
   Serial1.begin(9600);
   
-
   delay(500);
   Serial.println(F("GPS Setup done"));
 
-  digitalWrite(led, HIGH);
-  delay(500);
-  digitalWrite(led, LOW);
-  delay(500);
-  digitalWrite(led, HIGH);
-  delay(500);
-  digitalWrite(led, LOW);
-  delay(500);
   setupGPS();
-
   setupIMU();
-  //Serial.println(F("Setup IMU success, kind of"));
-  //delay(500) ;
+  //Serial.println(F("Setup IMU success"));
+
+  //idicates that ODIN is finished with setup
+  digitalWrite(led, HIGH);
+  delay(500);
+  digitalWrite(led, LOW);
+  delay(500);
+  digitalWrite(led, HIGH);
+  delay(500);
+  digitalWrite(led, LOW);
+  delay(500);
 }
 
 
 // MAIN LOOP.
 void loop() {
-  //delay(1000);
-  
-  
+
   IMU_YAW = getYawIMU();
   IMU_PITCH = getPitchIMU();
   IMU_ROLL = getRollIMU();
