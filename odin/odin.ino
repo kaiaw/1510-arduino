@@ -4,18 +4,16 @@
 #include <Adafruit_L3GD20_U.h>
 #include <Adafruit_9DOF.h>
 #include "IMU.h"
+#include <Wire.h>
 
 // Librarys to use servos
 #include <Servo.h>
-#include <Wire.h>
-
 
 // Librarys used by GPS
 #include "GPS.h"
 #include "GPS_READER.h"
 #include "GPS_UTILS.h"
 #include <SoftwareSerial.h>
-
 
 //xbee uses serial1
 
@@ -25,8 +23,8 @@
 #define IMU_SCL  1   // analog  1
 #define IMU_SDA  0   // analog  0
 
-#define ServoRollPin   11  // digital 10
-#define ServoPitchPin  10  // digital 11
+#define ServoRollPin   11  // digital 11
+#define ServoPitchPin  10  // digital 10
 #define ServoYawPin    12  // digital 12
 
 #define pushbtn  7   // digital 7
@@ -47,6 +45,7 @@ double rollServoDegrees;
 double pitchServoDegrees;
 double yawServoTorque;
 
+
 double GPS_SYNC_LATITUDE = 0;
 double GPS_SYNC_LONGITUDE = 0;
 double GPS_SYNC_ALTITUDE = 0;
@@ -62,6 +61,7 @@ void setup() {
   servoPitch.attach(ServoPitchPin);
   servoYaw.attach(ServoYawPin);
 
+  //Set servos to init position
   servoPitch.write(90);
   servoRoll.write(90);
   servoYaw.write(127);
@@ -71,12 +71,11 @@ void setup() {
   Serial.begin(9600);  
   Serial1.begin(9600);
   
-  delay(500);
   Serial.println(F("GPS Setup done"));
 
   setupGPS();
   setupIMU();
-  //Serial.println(F("Setup IMU success"));
+  Serial.println(F("Setup IMU success"));
 
   //idicates that ODIN is finished with setup
   digitalWrite(led, HIGH);
@@ -128,81 +127,19 @@ void loop() {
     digitalWrite(led, LOW);
   }
 
-  /* if the push button is pressed we reset the position
-     and returns
-   */
-   
-
-  /* double bislettBabbLat = 59.920761;
-  double bislettBabbLong = 10.733468;
-  
-  double guttaLat = 59.924514;
-  double guttaLong = 10.739519;
-  */
-
-  // read the input on analog pin 0:
-  //double degrees = getDesiredPitchAngle(bislettBabbLat, bislettBabbLong, guttaLat, guttaLong);
-  // print out the value you read:
-  //Serial.println(degrees);
-  // delay(100);        // delay in between reads for stability
-
-
-  Serial1.println("Read GPS data");
-  delay(2);
   getGPSdata();
-  
-  /*
-  Serial1.println("\nGPS Person");
-  delay(2);
-  Serial1.print(F("fix: "));
-  delay(2);
-  Serial1.println((int)GPS_PERSON->fix);
-  delay(2);
-  Serial1.print(F("long: "));
-  delay(2);
-  Serial1.println((int)GPS_PERSON->longitude);
-  delay(2);
-  Serial1.print(F("lat: "));
-  delay(2);
-  Serial1.println((int)GPS_PERSON->latitude);
-  delay(2);
 
-  Serial1.println("\nGPS camera");
-  delay(2);
-  Serial1.print(F("long: "));
-  delay(2);
-  Serial1.println((int)GPS_SYNC_LONGITUDE);
-  delay(2);
-  Serial1.print(F("lat: "));
-  delay(2);
-  Serial1.println((int)GPS_SYNC_LATITUDE);
-  */
-
+  //Workaround for complications with internal GPS
   if (GPS_PERSON->fix && GPS_SYNC_SUCCESS){
     setServos();
   } else {
-    Serial1.println(F("Stop servos"));
-    Serial1.println(GPS_SYNC_SUCCESS);
-    Serial1.println(GPS_PERSON->fix);
     stopServos();
   }
-  
-  /*
-  // if millis() or timer wraps around, we'll just reset it
-  if (timer > millis())  timer = millis();
-
-  // approximately every 2 seconds or so, print out the current stats
-  if (millis() - timer > 2000) { 
-    timer = millis(); // reset the timer
-    
-   //printGPSdata(GPS_CAM); 
-   //printGPSdata(GPS_PERSON); 
-  }
-  */
+ 
 
 }
 
-
+// Calculating servo torque and degrees and setting them to servos.
 void setServos(){
   
   GPS_PITCH = getDesiredPitchAngle(GPS_SYNC_ALTITUDE, GPS_PERSON->altitude,
@@ -223,7 +160,7 @@ void setServos(){
   /* Mapping the difference between IMU and GPS to step values
   */ 
   //pitchServoDegrees = map(IMU_PITCH-GPS_PITCH, -90, 90, 0, 179);
-  pitchServoDegrees = map(IMU_PITCH, -90, 90, 0, 179);
+  pitchServoDegrees = map(IMU_PITCH-GPS_PITCH, -90, 90, 0, 179);
 
   if (pitchServoDegrees > 120)
     pitchServoDegrees = 120;
@@ -236,17 +173,11 @@ void setServos(){
   */
   yawServoTorque = map(GPS_YAW-IMU_YAW, -180, 180, 135, 120); // BYTTET UT GPS_YAW med 0!!! OG ENDRET GRENSEVERDIER
   
-  Serial1.print(F("PITCH: "));
-  Serial1.println(IMU_PITCH);
-  Serial1.println(pitchServoDegrees);
-  Serial1.print(F("YAW:   "));
-  Serial1.println(IMU_YAW);
-  Serial1.println(yawServoTorque);
-  
-  
-  servoPitch.write(pitchServoDegrees);
 
+  servoRoll.write(rollServoDegrees);
+  servoPitch.write(pitchServoDegrees);
   servoYaw.write(yawServoTorque);
+  
 
 }
 
