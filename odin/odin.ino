@@ -95,47 +95,9 @@ void loop() {
   IMU_YAW = getYawIMU();
   IMU_PITCH = getPitchIMU();
   IMU_ROLL = getRollIMU();
-  
-  Serial1.print("YAW  ");
-  Serial1.print(IMU_YAW, 3);
-  Serial1.print("  PITCH  ");
-  Serial1.print(IMU_PITCH, 3);
-  Serial1.print("  ROLL  ");
-  Serial1.println(IMU_ROLL, 3);
-  
-  
-  return;
-  
-  if (digitalRead(pushbtn) == LOW && GPS_PERSON->fix){
-    digitalWrite(led, HIGH);
-    GPS_SYNC_LATITUDE = GPS_PERSON->latitude;
-    GPS_SYNC_LONGITUDE = GPS_PERSON->longitude;
-    GPS_SYNC_ALTITUDE = GPS_PERSON->altitude;
-    GPS_SYNC_SUCCESS = true;
-    //If we synced a good position, tell the user.
-    digitalWrite(led, LOW);
-    delay(500);
-    digitalWrite(led, HIGH);
-    delay(500);
-    digitalWrite(led, LOW);
-    delay(500);
-    digitalWrite(led, HIGH);
-    delay(500);
-  } else if (GPS_SYNC_SUCCESS) {
-    digitalWrite(led, HIGH);
-  } else {
-    digitalWrite(led, LOW);
-  }
 
   getGPSdata();
-
-  //Workaround for complications with internal GPS
-  if (GPS_PERSON->fix && GPS_SYNC_SUCCESS){
-    setServos();
-  } else {
-    stopServos();
-  }
- 
+  setServos();
 
 }
 
